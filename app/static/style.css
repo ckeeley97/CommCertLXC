@@ -1,0 +1,191 @@
+/* ============================================================
+   Ascom Commissioning Certificate — shared layout
+   The SAME stylesheet drives the on-screen form and the PDF,
+   which is what makes the exported PDF identical to the form.
+   ============================================================ */
+
+:root {
+  --label-red: #E2231A;   /* field-label cells (Site, Name, ...) */
+  --bar-red:   #ED1C24;   /* full-width section bars             */
+  --cell:      #ECECEC;   /* value cells                         */
+  --cell-alt:  #F4F4F4;   /* large text areas                    */
+  --ink:       #1a1a1a;
+  --gap:       2px;       /* white grid lines between cells       */
+  --page-w:    820px;
+  --label-w:   190px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: #d9d9d9;
+  color: var(--ink);
+  font-family: "Segoe UI", Arial, Helvetica, sans-serif;
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+/* The sheet ------------------------------------------------- */
+.page {
+  width: var(--page-w);
+  margin: 24px auto;
+  background: #fff;
+  padding: 34px 40px 48px;
+  box-shadow: 0 2px 14px rgba(0,0,0,.25);
+}
+
+/* Masthead -------------------------------------------------- */
+.masthead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 26px;
+}
+.masthead h1 {
+  font-size: 26px;
+  font-weight: 700;
+  margin: 0;
+  letter-spacing: .2px;
+}
+.logo-img {
+  height: 40px;
+  width: auto;
+  display: block;
+}
+
+/* Generic cell grids --------------------------------------- */
+.grid {
+  display: grid;
+  gap: var(--gap);
+  background: #fff;
+  margin-bottom: 8px;
+}
+.info-grid  { grid-template-columns: var(--label-w) 1fr 90px var(--label-w); }
+.sign-grid  { grid-template-columns: var(--label-w) 1fr 220px; }
+
+.cell {
+  padding: 7px 10px;
+  min-height: 30px;
+  display: flex;
+  align-items: center;
+}
+.cell.label {
+  background: var(--label-red);
+  color: #fff;
+  font-weight: 700;
+}
+.cell.value { background: var(--cell); }
+.cell.plain { background: #fff; padding-left: 0; }     /* e.g. "For and on Behalf of" */
+
+.span2 { grid-column: span 2; }
+.span3 { grid-column: span 3; }
+
+/* Full-width section bar ------------------------------------ */
+.bar {
+  background: var(--bar-red);
+  color: #fff;
+  font-weight: 700;
+  padding: 7px 12px;
+  margin: 18px 0 8px;
+}
+
+/* Large free-text areas (Scope / Variations) ---------------- */
+.textbox {
+  background: var(--cell-alt);
+  min-height: 92px;
+  padding: 10px 12px;
+  white-space: pre-wrap;
+  margin-bottom: 8px;
+}
+
+/* The certification paragraph ------------------------------- */
+.legal {
+  font-size: 11.5px;
+  line-height: 1.4;
+  margin: 6px 2px 10px;
+}
+
+.note { font-size: 12px; margin: 2px 2px 6px; }
+
+/* Form controls dropped into value cells -------------------- */
+.cell.value input[type="text"],
+.cell.value input[type="date"] {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  color: inherit;
+  outline: none;
+  padding: 0;
+}
+textarea.field {
+  width: 100%;
+  border: 0;
+  background: var(--cell-alt);
+  min-height: 92px;
+  padding: 10px 12px;
+  font: inherit;
+  color: inherit;
+  resize: vertical;
+  outline: none;
+  margin-bottom: 8px;
+}
+
+/* Signature pads ------------------------------------------- */
+.sigpad-wrap { width: 100%; }
+.sigpad {
+  width: 100%;
+  height: 60px;
+  background: #fff;
+  border: 1px dashed #b9b9b9;
+  touch-action: none;
+  display: block;
+}
+.sig-clear {
+  font-size: 11px;
+  background: none;
+  border: 0;
+  color: var(--bar-red);
+  cursor: pointer;
+  padding: 2px 0 0;
+}
+.sig-img { max-height: 56px; max-width: 100%; }
+
+/* Action bar ----------------------------------------------- */
+.actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 22px;
+  flex-wrap: wrap;
+}
+.btn {
+  background: var(--bar-red);
+  color: #fff;
+  border: 0;
+  padding: 10px 18px;
+  font: inherit;
+  font-weight: 700;
+  border-radius: 3px;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+}
+.btn.secondary { background: #555; }
+.btn.ghost { background: #fff; color: var(--ink); border: 1px solid #bbb; }
+
+/* Submissions list ----------------------------------------- */
+table.list { width: 100%; border-collapse: collapse; }
+table.list th, table.list td {
+  text-align: left; padding: 8px 10px; border-bottom: 1px solid #e2e2e2;
+}
+table.list th { background: var(--bar-red); color: #fff; }
+table.list tr:nth-child(even) td { background: #fafafa; }
+
+/* ---------- PDF-specific (WeasyPrint) ---------------------- */
+@page { size: A4; margin: 1.4cm 1.3cm; }
+body.pdf { background: #fff; }
+.pdf .page {
+  width: auto; margin: 0; padding: 0; box-shadow: none;
+}
+.pdf .actions, .pdf .toolbar { display: none; }
