@@ -195,6 +195,41 @@ table.list tr:nth-child(even) td { background: #fafafa; }
   background: none; border: 0; padding: 0; cursor: pointer;
   color: var(--bar-red); font: inherit; text-decoration: underline;
 }
+/* Let the (wide) list scroll on its own instead of the whole page. */
+.table-wrap { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+/* ---------- Mobile (screen only — never affects the PDF) --- */
+@media screen and (max-width: 640px) {
+  body { font-size: 15px; }
+  .page {
+    width: auto;
+    max-width: 100%;
+    margin: 0;
+    padding: 16px 12px 28px;
+    box-shadow: none;
+  }
+  .masthead { margin-bottom: 16px; }
+  .masthead h1 { font-size: 19px; }
+  .mh-logo { width: auto; }
+  .logo-img { height: 30px; }
+
+  /* Stack every label/value cell into a single readable column. */
+  .info-grid, .sign-grid { grid-template-columns: 1fr; }
+  .span2, .span3 { grid-column: auto; }
+  .cell { min-height: 40px; }
+  .cell.plain { padding: 7px 10px; }
+  .cell.value input[type="text"],
+  .cell.value input[type="date"] { min-height: 26px; }
+
+  .bar { margin: 14px 0 6px; }
+  .legal { font-size: 12.5px; }
+
+  /* Full-width, finger-friendly buttons. */
+  .actions { gap: 8px; }
+  .actions .btn { flex: 1 1 140px; text-align: center; padding: 12px 14px; }
+
+  table.list { min-width: 560px; }   /* scrolls inside .table-wrap */
+}
 
 /* ---------- PDF-specific (WeasyPrint) ---------------------- */
 /* Scaled down to match the sizing of the original certificate: smaller type,
