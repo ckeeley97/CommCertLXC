@@ -15,6 +15,7 @@
 
   <div class="actions" style="margin-top:0">
     <a class="btn" href="{{ url_for('index') }}">+ New certificate</a>
+    <a class="btn ghost" href="{{ url_for('logout') }}" style="margin-left:auto">Sign out ({{ session.user }})</a>
   </div>
 
   {% if rows %}
