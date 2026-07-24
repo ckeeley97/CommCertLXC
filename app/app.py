@@ -4,13 +4,16 @@ The interactive form and the exported PDF are rendered from the same templates
 and stylesheet, so the PDF layout matches the on-screen certificate exactly.
 """
 import os
+import secrets
 import sqlite3
 from datetime import datetime
+from functools import wraps
 
 from flask import (
     Flask, request, redirect, url_for, render_template,
-    g, abort, Response,
+    g, abort, Response, session,
 )
+from werkzeug.security import generate_password_hash, check_password_hash
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.environ.get("ASCOM_DATA_DIR", os.path.join(BASE_DIR, "data"))
@@ -27,6 +30,39 @@ FIELDS = [
 ]
 
 app = Flask(__name__)
+
+
+def ensure_secret_key():
+    """Stable session secret: env override, else a persisted random key."""
+    env = os.environ.get("ASCOM_SECRET_KEY")
+    if env:
+        return env
+    os.makedirs(DATA_DIR, exist_ok=True)
+    path = os.path.join(DATA_DIR, "secret_key")
+    if os.path.exists(path):
+        with open(path) as fh:
+            return fh.read().strip()
+    key = secrets.token_hex(32)
+    with open(path, "w") as fh:
+        fh.write(key)
+    try:
+        os.chmod(path, 0o600)
+    except OSError:
+        pass
+    return key
+
+
+app.secret_key = ensure_secret_key()
+app.config.update(SESSION_COOKIE_HTTPONLY=True, SESSION_COOKIE_SAMESITE="Lax")
+
+
+def login_required(view):
+    @wraps(view)
+    def wrapped(*args, **kwargs):
+        if not session.get("user"):
+            return redirect(url_for("login", next=request.path))
+        return view(*args, **kwargs)
+    return wrapped
 
 
 def logo_file():
@@ -65,7 +101,48 @@ def init_db():
   updated_at TEXT
 )"""
     )
+    con.execute(
+        """CREATE TABLE IF NOT EXISTS users (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  username TEXT UNIQUE NOT NULL,
+  password_hash TEXT NOT NULL,
+  created_at TEXT
+)"""
+    )
     con.commit()
+    con.close()
+
+
+def seed_admin():
+    """Create the first user if none exist. Uses ASCOM_ADMIN_USER /
+    ASCOM_ADMIN_PASSWORD if set, otherwise generates a password and writes it
+    to data/INITIAL_ADMIN_PASSWORD.txt so it can be retrieved once."""
+    con = sqlite3.connect(DB_PATH)
+    con.row_factory = sqlite3.Row
+    count = con.execute("SELECT COUNT(*) AS c FROM users").fetchone()["c"]
+    if count == 0:
+        username = os.environ.get("ASCOM_ADMIN_USER", "admin").strip() or "admin"
+        password = os.environ.get("ASCOM_ADMIN_PASSWORD")
+        generated = password is None
+        if generated:
+            password = secrets.token_urlsafe(12)
+        con.execute(
+            "INSERT INTO users (username, password_hash, created_at) VALUES (?, ?, ?)",
+            (username, generate_password_hash(password),
+             datetime.now().strftime("%Y-%m-%d %H:%M")),
+        )
+        con.commit()
+        if generated:
+            path = os.path.join(DATA_DIR, "INITIAL_ADMIN_PASSWORD.txt")
+            with open(path, "w") as fh:
+                fh.write(f"username: {username}\npassword: {password}\n")
+            try:
+                os.chmod(path, 0o600)
+            except OSError:
+                pass
+            app.logger.warning(
+                "Seeded initial user '%s' with a generated password (saved to %s)",
+                username, path)
     con.close()
 
 
@@ -78,8 +155,39 @@ def fetch(cert_id):
     return row
 
 
+# --- auth -------------------------------------------------------------------
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    if session.get("user"):
+        return redirect(url_for("index"))
+    error = None
+    if request.method == "POST":
+        username = request.form.get("username", "").strip()
+        password = request.form.get("password", "")
+        row = get_db().execute(
+            "SELECT * FROM users WHERE username = ?", (username,)
+        ).fetchone()
+        if row and check_password_hash(row["password_hash"], password):
+            session.clear()
+            session["user"] = username
+            nxt = request.args.get("next", "")
+            # Only allow local relative redirects (no open-redirect).
+            if not nxt.startswith("/") or nxt.startswith("//"):
+                nxt = url_for("index")
+            return redirect(nxt)
+        error = "Invalid username or password."
+    return render_template("login.html", error=error, logo_file=logo_file())
+
+
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect(url_for("login"))
+
+
 # --- routes -----------------------------------------------------------------
 @app.route("/")
+@login_required
 def index():
     # Blank form. `v` resolves field values; `row` is None for a new cert.
     return render_template("form.html", row=None, v=lambda k: "", logo_file=logo_file())
@@ -87,6 +195,7 @@ def index():
 
 @app.route("/submit", methods=["POST"])
 @app.route("/submit/<int:id>", methods=["POST"])
+@login_required
 def submit(id=None):
     values = {f: request.form.get(f, "").strip() for f in FIELDS}
     now = datetime.now().strftime("%Y-%m-%d %H:%M")
@@ -111,6 +220,7 @@ def submit(id=None):
 
 
 @app.route("/submissions")
+@login_required
 def submissions():
     rows = get_db().execute(
         "SELECT * FROM certificates ORDER BY id DESC"
@@ -119,6 +229,7 @@ def submissions():
 
 
 @app.route("/certificate/<int:id>")
+@login_required
 def certificate(id):
     css_href = url_for("static", filename="style.css")
     logo_href = url_for("static", filename=logo_file())
@@ -127,6 +238,7 @@ def certificate(id):
 
 
 @app.route("/certificate/<int:id>/edit")
+@login_required
 def edit(id):
     row = fetch(id)
     return render_template("form.html", row=row, v=lambda k: row[k] or "",
@@ -134,6 +246,7 @@ def edit(id):
 
 
 @app.route("/certificate/<int:id>.pdf")
+@login_required
 def certificate_pdf(id):
     row = fetch(id)
     # Absolute file:// hrefs so WeasyPrint loads assets without a live request.
@@ -157,6 +270,7 @@ def certificate_pdf(id):
 
 
 init_db()
+seed_admin()
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 8000)), debug=True)
