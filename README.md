@@ -75,8 +75,14 @@ pct exec <CTID> -- bash -c 'cd /opt/ascom-form/src && git pull && systemctl rest
 - Debian 12 (unprivileged LXC), Python 3 + venv
 - Flask + Gunicorn + WeasyPrint (and its Pango/Cairo native deps)
 - The app as a **systemd service** (`ascom-form`) on `127.0.0.1:8000`
-- **nginx** reverse proxy on port 80
+- **nginx** reverse proxy with **HTTPS** (self-signed cert in `/etc/ssl/ascom/`);
+  port 80 redirects to 443
 - A persistent SQLite DB at `/opt/ascom-form/data/submissions.db`
+
+> The certificate is self-signed, so browsers show a one-time "not trusted"
+> warning on a LAN — accept it to proceed. To silence it, replace
+> `/etc/ssl/ascom/ascom.crt` + `.key` with a cert from your internal CA (or a
+> real cert if it has a DNS name) and `systemctl restart nginx`.
 
 ## Authentication
 
@@ -103,9 +109,9 @@ pct exec <CTID> -- /opt/ascom-form/venv/bin/python /opt/ascom-form/src/app/manag
 pct exec <CTID> -- /opt/ascom-form/venv/bin/python /opt/ascom-form/src/app/manage_users.py list
 ```
 
-> Serving over plain HTTP on a trusted LAN. If you expose this beyond the LAN,
-> put TLS in front (e.g. nginx + a certificate) so credentials aren't sent in
-> the clear, and set `SESSION_COOKIE_SECURE`.
+> Traffic is served over **HTTPS** (nginx, self-signed cert) and the session
+> cookie is marked `Secure` (`ASCOM_SECURE_COOKIE=1` in the service unit), so
+> credentials aren't sent in the clear.
 
 ## Routes
 
