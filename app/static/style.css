@@ -37,21 +37,21 @@ body {
 
 /* Masthead -------------------------------------------------- */
 .masthead {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
   margin-bottom: 26px;
+  overflow: hidden;           /* contain the floats (reliable in WeasyPrint) */
 }
 .masthead h1 {
   font-size: 26px;
   font-weight: 700;
   margin: 0;
   letter-spacing: .2px;
+  float: left;
+  max-width: 65%;
 }
 .logo-img {
-  height: 40px;
+  float: right;
+  height: 44px;
   width: auto;
-  display: block;
 }
 
 /* Generic cell grids --------------------------------------- */
