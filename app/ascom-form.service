@@ -1,0 +1,16 @@
+[Unit]
+Description=Ascom Commissioning Certificate form app
+After=network.target
+
+[Service]
+Type=simple
+User=ascom
+Group=ascom
+WorkingDirectory=/opt/ascom-form/app
+Environment=ASCOM_DATA_DIR=/opt/ascom-form/data
+ExecStart=/opt/ascom-form/venv/bin/gunicorn --workers 2 --bind 127.0.0.1:8000 app:app
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
