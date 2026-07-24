@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 90" role="img" aria-label="ascom">
+  <!-- Fallback wordmark. Replace app/static/ with the official ascom.png
+       (auto-preferred) or overwrite this file with the official SVG. -->
+  <text x="0" y="70"
+        font-family="'Arial Rounded MT Bold','Segoe UI',Arial,sans-serif"
+        font-size="82" font-weight="800" letter-spacing="-3"
+        fill="#E2231A">ascom</text>
+</svg>
