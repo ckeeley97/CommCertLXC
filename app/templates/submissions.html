@@ -35,7 +35,12 @@
         <td>
           <a href="{{ url_for('certificate', id=r['id']) }}">View</a> &middot;
           <a href="{{ url_for('certificate_pdf', id=r['id']) }}">PDF</a> &middot;
-          <a href="{{ url_for('edit', id=r['id']) }}">Edit</a>
+          <a href="{{ url_for('edit', id=r['id']) }}">Edit</a> &middot;
+          <form method="post" action="{{ url_for('delete', id=r['id']) }}"
+                style="display:inline"
+                onsubmit="return confirm('Delete certificate #{{ r['id'] }}{% if r['site'] %} ({{ r['site'] }}){% endif %}? This cannot be undone.');">
+            <button type="submit" class="link-danger">Delete</button>
+          </form>
         </td>
       </tr>
     {% endfor %}
