@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sign in — Commissioning Certificates</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <style>
+    .login-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+    .login-card {
+      background: #fff; width: 360px; max-width: 92vw; padding: 30px 28px 26px;
+      box-shadow: 0 2px 14px rgba(0,0,0,.25); border-radius: 4px;
+    }
+    .login-card img.logo-img { height: 34px; width: auto; display: block; margin-bottom: 18px; }
+    .login-card h1 { font-size: 18px; margin: 0 0 16px; }
+    .login-card label { display: block; font-weight: 700; margin: 12px 0 4px; font-size: 12px; }
+    .login-card input[type=text], .login-card input[type=password] {
+      width: 100%; padding: 9px 10px; border: 1px solid #c4c4c4; border-radius: 3px;
+      font: inherit;
+    }
+    .login-card .btn { width: 100%; margin-top: 18px; text-align: center; }
+    .login-err {
+      background: #fdecec; border: 1px solid #f3b6b6; color: #a11; padding: 8px 10px;
+      border-radius: 3px; font-size: 12px; margin-bottom: 6px;
+    }
+  </style>
+</head>
+<body>
+<div class="login-wrap">
+  <form class="login-card" method="post" action="{{ url_for('login', next=request.args.get('next','')) }}">
+    <img class="logo-img" src="{{ url_for('static', filename=logo_file) }}" alt="ascom">
+    <h1>Commissioning Certificates</h1>
+    {% if error %}<div class="login-err">{{ error }}</div>{% endif %}
+    <label for="username">Username</label>
+    <input type="text" id="username" name="username" autofocus autocomplete="username" required>
+    <label for="password">Password</label>
+    <input type="password" id="password" name="password" autocomplete="current-password" required>
+    <button class="btn" type="submit">Sign in</button>
+  </form>
+</div>
+</body>
+</html>
