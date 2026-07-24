@@ -78,16 +78,46 @@ pct exec <CTID> -- bash -c 'cd /opt/ascom-form/src && git pull && systemctl rest
 - **nginx** reverse proxy on port 80
 - A persistent SQLite DB at `/opt/ascom-form/data/submissions.db`
 
+## Authentication
+
+Every route requires a login (session-based, passwords hashed with werkzeug).
+On first start the app seeds one user:
+
+- **Username:** `admin` (override with `ASCOM_ADMIN_USER`)
+- **Password:** set `ASCOM_ADMIN_PASSWORD` before the first run to choose it.
+  If you don't, a random password is generated and written **once** to
+  `/opt/ascom-form/data/INITIAL_ADMIN_PASSWORD.txt` — read it with:
+
+  ```bash
+  pct exec <CTID> -- cat /opt/ascom-form/data/INITIAL_ADMIN_PASSWORD.txt
+  ```
+
+The session secret is auto-generated and persisted to
+`/opt/ascom-form/data/secret_key` (override with `ASCOM_SECRET_KEY`).
+
+**Add or reset a user** (run inside the container):
+
+```bash
+pct exec <CTID> -- /opt/ascom-form/venv/bin/python /opt/ascom-form/src/app/manage_users.py add  <username>
+pct exec <CTID> -- /opt/ascom-form/venv/bin/python /opt/ascom-form/src/app/manage_users.py passwd <username>
+pct exec <CTID> -- /opt/ascom-form/venv/bin/python /opt/ascom-form/src/app/manage_users.py list
+```
+
+> Serving over plain HTTP on a trusted LAN. If you expose this beyond the LAN,
+> put TLS in front (e.g. nginx + a certificate) so credentials aren't sent in
+> the clear, and set `SESSION_COOKIE_SECURE`.
+
 ## Routes
 
 | Route | Purpose |
 |-------|---------|
-| `GET /` | Blank fillable certificate |
-| `POST /submit` | Save a submission |
-| `GET /submissions` | List saved certificates |
-| `GET /certificate/<id>` | View a saved certificate (screen) |
-| `GET /certificate/<id>.pdf` | Download the filled PDF |
-| `GET /certificate/<id>/edit` | Re-open a submission in the form |
+| `GET /login` · `GET /logout` | Sign in / out |
+| `GET /` | Blank fillable certificate *(login required)* |
+| `POST /submit` | Save a submission *(login required)* |
+| `GET /submissions` | List saved certificates *(login required)* |
+| `GET /certificate/<id>` | View a saved certificate *(login required)* |
+| `GET /certificate/<id>.pdf` | Download the filled PDF *(login required)* |
+| `GET /certificate/<id>/edit` | Re-open a submission *(login required)* |
 
 ## Local development (optional, on any machine with Python 3)
 
