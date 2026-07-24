@@ -191,8 +191,19 @@ def logout():
 
 # --- routes -----------------------------------------------------------------
 @app.route("/")
+@app.route("/submissions", endpoint="submissions")
 @login_required
 def index():
+    # Home = the list of saved certificates (also reachable at /submissions).
+    rows = get_db().execute(
+        "SELECT * FROM certificates ORDER BY id DESC"
+    ).fetchall()
+    return render_template("submissions.html", rows=rows, logo_file=logo_file())
+
+
+@app.route("/new")
+@login_required
+def new():
     # Blank form. `v` resolves field values; `row` is None for a new cert.
     return render_template("form.html", row=None, v=lambda k: "", logo_file=logo_file())
 
@@ -221,15 +232,6 @@ def submit(id=None):
         )
     db.commit()
     return redirect(url_for("certificate", id=id))
-
-
-@app.route("/submissions")
-@login_required
-def submissions():
-    rows = get_db().execute(
-        "SELECT * FROM certificates ORDER BY id DESC"
-    ).fetchall()
-    return render_template("submissions.html", rows=rows, logo_file=logo_file())
 
 
 @app.route("/certificate/<int:id>")
