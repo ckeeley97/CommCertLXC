@@ -12,6 +12,7 @@
 
   <div class="toolbar actions" style="margin:0 0 12px">
     <a class="btn ghost" href="{{ url_for('submissions') }}">&larr; All certificates</a>
+    <a class="btn ghost" href="{{ url_for('logout') }}" style="margin-left:auto">Sign out ({{ session.user }})</a>
   </div>
 
   <table class="masthead"><tr>
