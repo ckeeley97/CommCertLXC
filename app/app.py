@@ -54,6 +54,9 @@ def ensure_secret_key():
 
 app.secret_key = ensure_secret_key()
 app.config.update(SESSION_COOKIE_HTTPONLY=True, SESSION_COOKIE_SAMESITE="Lax")
+# Behind TLS (nginx) set ASCOM_SECURE_COOKIE=1 so the cookie is HTTPS-only.
+if os.environ.get("ASCOM_SECURE_COOKIE") == "1":
+    app.config["SESSION_COOKIE_SECURE"] = True
 
 
 def login_required(view):
@@ -171,9 +174,10 @@ def login():
             session.clear()
             session["user"] = username
             nxt = request.args.get("next", "")
-            # Only allow local relative redirects (no open-redirect).
+            # Only allow local relative redirects (no open-redirect);
+            # otherwise land on the certificate list.
             if not nxt.startswith("/") or nxt.startswith("//"):
-                nxt = url_for("index")
+                nxt = url_for("submissions")
             return redirect(nxt)
         error = "Invalid username or password."
     return render_template("login.html", error=error, logo_file=logo_file())
@@ -243,6 +247,16 @@ def edit(id):
     row = fetch(id)
     return render_template("form.html", row=row, v=lambda k: row[k] or "",
                            logo_file=logo_file())
+
+
+@app.route("/certificate/<int:id>/delete", methods=["POST"])
+@login_required
+def delete(id):
+    fetch(id)  # 404 if missing
+    db = get_db()
+    db.execute("DELETE FROM certificates WHERE id = ?", (id,))
+    db.commit()
+    return redirect(url_for("submissions"))
 
 
 @app.route("/certificate/<int:id>.pdf")
