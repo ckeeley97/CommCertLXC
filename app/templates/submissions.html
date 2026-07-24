@@ -20,6 +20,7 @@
   </div>
 
   {% if rows %}
+  <div class="table-wrap">
   <table class="list">
     <thead>
       <tr><th>#</th><th>Site</th><th>Customer</th><th>Project Ref</th><th>Date</th><th>Saved</th><th></th></tr>
@@ -47,6 +48,7 @@
     {% endfor %}
     </tbody>
   </table>
+  </div>
   {% else %}
   <p class="note">No certificates saved yet.</p>
   {% endif %}
