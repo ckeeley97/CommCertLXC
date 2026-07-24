@@ -36,22 +36,32 @@ body {
 }
 
 /* Masthead -------------------------------------------------- */
-.masthead {
-  margin-bottom: 26px;
-  overflow: hidden;           /* contain the floats (reliable in WeasyPrint) */
+/* 2-cell table masthead — deterministic in WeasyPrint, no overlap. */
+table.masthead {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 22px;
+}
+table.masthead td {
+  vertical-align: middle;
+  padding: 0;
+  border: 0;
 }
 .masthead h1 {
   font-size: 26px;
   font-weight: 700;
   margin: 0;
   letter-spacing: .2px;
-  float: left;
-  max-width: 65%;
+}
+.mh-logo {
+  text-align: right;
+  white-space: nowrap;
+  width: 210px;
 }
 .logo-img {
-  float: right;
-  height: 44px;
+  height: 42px;
   width: auto;
+  vertical-align: middle;
 }
 
 /* Generic cell grids --------------------------------------- */
