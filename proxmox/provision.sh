@@ -24,7 +24,7 @@ export DEBIAN_FRONTEND=noninteractive
 apt-get update -qq
 apt-get install -y --no-install-recommends \
   python3 python3-venv python3-pip \
-  nginx \
+  nginx openssl \
   libpango-1.0-0 libpangocairo-1.0-0 libpangoft2-1.0-0 \
   libcairo2 libgdk-pixbuf-2.0-0 libffi-dev \
   fonts-dejavu-core
@@ -52,6 +52,7 @@ User=ascom
 Group=ascom
 WorkingDirectory=$APP_DIR
 Environment=ASCOM_DATA_DIR=$DATA
+Environment=ASCOM_SECURE_COOKIE=1
 ExecStart=$VENV/bin/gunicorn --workers 2 --bind 127.0.0.1:8000 app:app
 Restart=on-failure
 RestartSec=3
@@ -64,11 +65,33 @@ systemctl daemon-reload
 systemctl enable --now ascom-form
 systemctl restart ascom-form
 
-echo ">> nginx reverse proxy…"
+echo ">> Self-signed TLS certificate…"
+CERT_DIR=/etc/ssl/ascom
+mkdir -p "$CERT_DIR"
+if [[ ! -f "$CERT_DIR/ascom.crt" ]]; then
+  IP=$(hostname -I | awk '{print $1}')
+  openssl req -x509 -nodes -newkey rsa:2048 -days 3650 \
+    -keyout "$CERT_DIR/ascom.key" -out "$CERT_DIR/ascom.crt" \
+    -subj "/CN=ascom-form" \
+    -addext "subjectAltName=DNS:ascom-form,IP:${IP:-127.0.0.1}"
+  chmod 600 "$CERT_DIR/ascom.key"
+fi
+
+echo ">> nginx reverse proxy (HTTPS, redirect 80 -> 443)…"
 cat >/etc/nginx/sites-available/ascom-form <<'NGINX'
 server {
     listen 80 default_server;
     server_name _;
+    return 301 https://$host$request_uri;
+}
+server {
+    listen 443 ssl default_server;
+    server_name _;
+
+    ssl_certificate     /etc/ssl/ascom/ascom.crt;
+    ssl_certificate_key /etc/ssl/ascom/ascom.key;
+    ssl_protocols       TLSv1.2 TLSv1.3;
+
     client_max_body_size 8m;      # allow signature PNG data URLs
 
     location / {
@@ -76,6 +99,7 @@ server {
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
     }
 }
 NGINX
@@ -84,5 +108,5 @@ rm -f /etc/nginx/sites-enabled/default
 nginx -t
 systemctl restart nginx
 
-echo ">> Done. App is live on port 80."
+echo ">> Done. App is live on https://$(hostname -I | awk '{print $1}')/"
 systemctl --no-pager --full status ascom-form | head -n 5 || true
