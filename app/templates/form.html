@@ -14,10 +14,10 @@
     <a class="btn ghost" href="{{ url_for('submissions') }}">&larr; All certificates</a>
   </div>
 
-  <div class="masthead">
-    <h1>Commissioning Certificate</h1>
-    <img class="logo-img" src="{{ url_for('static', filename=logo_file) }}" alt="ascom">
-  </div>
+  <table class="masthead"><tr>
+    <td><h1>Commissioning Certificate</h1></td>
+    <td class="mh-logo"><img class="logo-img" src="{{ url_for('static', filename=logo_file) }}" alt="ascom"></td>
+  </tr></table>
 
   <!-- Site / details ------------------------------------------------ -->
   <div class="grid info-grid">
