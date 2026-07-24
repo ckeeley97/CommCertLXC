@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Commissioning Certificate — {{ row['site'] or ('#' ~ row['id']) }}</title>
+  {% if not pdf %}<link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">{% endif %}
   <link rel="stylesheet" href="{{ css_href }}">
 </head>
 <body class="{{ 'pdf' if pdf else '' }}">
