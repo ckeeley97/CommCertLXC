@@ -193,9 +193,26 @@ table.list th { background: var(--bar-red); color: #fff; }
 table.list tr:nth-child(even) td { background: #fafafa; }
 
 /* ---------- PDF-specific (WeasyPrint) ---------------------- */
-@page { size: A4; margin: 1.4cm 1.3cm; }
-body.pdf { background: #fff; }
+/* Scaled down to match the sizing of the original certificate: smaller type,
+   shorter rows, so the content sits in the top portion of an A4 page.        */
+@page { size: A4; margin: 1.7cm 1.6cm; }
+body.pdf { background: #fff; font-size: 9.5px; }
 .pdf .page {
   width: auto; margin: 0; padding: 0; box-shadow: none;
 }
 .pdf .actions, .pdf .toolbar { display: none; }
+
+.pdf .masthead { margin-bottom: 24px; }
+.pdf .masthead h1 { font-size: 19px; }
+.pdf .mh-logo { width: 150px; }
+.pdf .logo-img { height: 30px; }
+
+.pdf .info-grid { grid-template-columns: 165px 1fr 60px 150px; }
+.pdf .sign-grid { grid-template-columns: 165px 1fr 200px; }
+
+.pdf .cell { min-height: 17px; padding: 3px 8px; }
+.pdf .bar  { padding: 4px 9px; margin: 15px 0 5px; }
+
+.pdf .textbox { min-height: 52px; padding: 7px 9px; }
+.pdf .legal   { font-size: 8.7px; line-height: 1.35; margin: 6px 2px 9px; }
+.pdf .note    { font-size: 9px; margin: 2px 2px 5px; }
