@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Commissioning Certificate — {{ row['site'] or ('#' ~ row['id']) }}</title>
+  <link rel="stylesheet" href="{{ css_href }}">
+</head>
+<body class="{{ 'pdf' if pdf else '' }}">
+<div class="page">
+
+  {% if not pdf %}
+  <div class="toolbar actions" style="margin:0 0 12px">
+    <a class="btn ghost" href="{{ url_for('submissions') }}">&larr; All certificates</a>
+    <a class="btn" href="{{ url_for('certificate_pdf', id=row['id']) }}">Download PDF</a>
+    <a class="btn secondary" href="{{ url_for('edit', id=row['id']) }}">Edit</a>
+  </div>
+  {% endif %}
+
+  <div class="masthead">
+    <h1>Commissioning Certificate</h1>
+    <img class="logo-img" src="{{ logo_href }}" alt="ascom">
+  </div>
+
+  <div class="grid info-grid">
+    <div class="cell label">Site</div>
+    <div class="cell value">{{ row['site'] }}</div>
+    <div class="cell label">Date</div>
+    <div class="cell value">{{ row['cert_date'] }}</div>
+
+    <div class="cell label">Location of works</div>
+    <div class="cell value span3">{{ row['location'] }}</div>
+
+    <div class="cell label">System</div>
+    <div class="cell value span3">{{ row['system'] }}</div>
+
+    <div class="cell label">Ascom Project Manager</div>
+    <div class="cell value span3">{{ row['project_manager'] }}</div>
+
+    <div class="cell label">Customer</div>
+    <div class="cell value span3">{{ row['customer'] }}</div>
+
+    <div class="cell label">Ascom Project Ref</div>
+    <div class="cell value span2">{{ row['project_ref'] }}</div>
+    <div class="cell value">{{ row['project_ref_2'] }}</div>
+  </div>
+
+  <div class="bar">Scope of Works</div>
+  <div class="textbox">{{ row['scope_of_works'] }}</div>
+
+  <p class="legal">
+    I/we being the competent persons responsible for the commissioning and setting to
+    work of the above, certify that the said work complies with the requirements of the
+    defined scope associated with this project. The extent of liability of the signatory
+    is limited to the system described in the scope of works. Any variations from this
+    scope are qualified below.
+  </p>
+
+  <div class="grid sign-grid">
+    <div class="cell label">Name</div>
+    <div class="cell value">{{ row['ascom_name'] }}</div>
+    <div class="cell plain"></div>
+
+    <div class="cell label">Signature</div>
+    <div class="cell value">
+      {% if row['ascom_signature'] %}<img class="sig-img" src="{{ row['ascom_signature'] }}" alt="signature">{% endif %}
+    </div>
+    <div class="cell plain">For and on Behalf of<br>Ascom (UK) Limited</div>
+  </div>
+
+  <div class="bar">Variations from scope</div>
+  <div class="textbox">{{ row['variations'] }}</div>
+
+  <div class="grid sign-grid">
+    <div class="cell label">Agreed by</div>
+    <div class="cell value">{{ row['agreed_by'] }}</div>
+    <div class="cell value"></div>
+
+    <div class="cell label">Signature</div>
+    <div class="cell value span2">
+      {% if row['agreed_signature'] %}<img class="sig-img" src="{{ row['agreed_signature'] }}" alt="signature">{% endif %}
+    </div>
+  </div>
+
+  <div class="bar">Acceptance</div>
+  <p class="note">The above system has been witnessed and/or accepted on behalf of</p>
+
+  <div class="grid sign-grid">
+    <div class="cell label">Name</div>
+    <div class="cell value span2">{{ row['acceptance_name'] }}</div>
+
+    <div class="cell label">Signature</div>
+    <div class="cell value span2">
+      {% if row['acceptance_signature'] %}<img class="sig-img" src="{{ row['acceptance_signature'] }}" alt="signature">{% endif %}
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
