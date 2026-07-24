@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ 'Edit' if row else 'New' }} Commissioning Certificate</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<form class="page" method="post"
+      action="{{ url_for('submit', id=row['id']) if row else url_for('submit') }}">
+
+  <div class="toolbar actions" style="margin:0 0 12px">
+    <a class="btn ghost" href="{{ url_for('submissions') }}">&larr; All certificates</a>
+  </div>
+
+  <div class="masthead">
+    <h1>Commissioning Certificate</h1>
+    <img class="logo-img" src="{{ url_for('static', filename=logo_file) }}" alt="ascom">
+  </div>
+
+  <!-- Site / details ------------------------------------------------ -->
+  <div class="grid info-grid">
+    <div class="cell label">Site</div>
+    <div class="cell value"><input type="text" name="site" value="{{ v('site') }}"></div>
+    <div class="cell label">Date</div>
+    <div class="cell value"><input type="date" name="cert_date" value="{{ v('cert_date') }}"></div>
+
+    <div class="cell label">Location of works</div>
+    <div class="cell value span3"><input type="text" name="location" value="{{ v('location') }}"></div>
+
+    <div class="cell label">System</div>
+    <div class="cell value span3"><input type="text" name="system" value="{{ v('system') }}"></div>
+
+    <div class="cell label">Ascom Project Manager</div>
+    <div class="cell value span3"><input type="text" name="project_manager" value="{{ v('project_manager') }}"></div>
+
+    <div class="cell label">Customer</div>
+    <div class="cell value span3"><input type="text" name="customer" value="{{ v('customer') }}"></div>
+
+    <div class="cell label">Ascom Project Ref</div>
+    <div class="cell value span2"><input type="text" name="project_ref" value="{{ v('project_ref') }}"></div>
+    <div class="cell value"><input type="text" name="project_ref_2" value="{{ v('project_ref_2') }}"></div>
+  </div>
+
+  <!-- Scope of Works ------------------------------------------------ -->
+  <div class="bar">Scope of Works</div>
+  <textarea class="field" name="scope_of_works" rows="4">{{ v('scope_of_works') }}</textarea>
+
+  <p class="legal">
+    I/we being the competent persons responsible for the commissioning and setting to
+    work of the above, certify that the said work complies with the requirements of the
+    defined scope associated with this project. The extent of liability of the signatory
+    is limited to the system described in the scope of works. Any variations from this
+    scope are qualified below.
+  </p>
+
+  <div class="grid sign-grid">
+    <div class="cell label">Name</div>
+    <div class="cell value"><input type="text" name="ascom_name" value="{{ v('ascom_name') }}"></div>
+    <div class="cell plain"></div>
+
+    <div class="cell label">Signature</div>
+    <div class="cell value">
+      <div class="sigpad-wrap">
+        <canvas class="sigpad" data-target="ascom_signature"></canvas>
+        <button type="button" class="sig-clear">Clear</button>
+      </div>
+    </div>
+    <div class="cell plain">For and on Behalf of<br>Ascom (UK) Limited</div>
+  </div>
+  <input type="hidden" name="ascom_signature" value="{{ v('ascom_signature') }}">
+
+  <!-- Variations from scope ----------------------------------------- -->
+  <div class="bar">Variations from scope</div>
+  <textarea class="field" name="variations" rows="4">{{ v('variations') }}</textarea>
+
+  <div class="grid sign-grid">
+    <div class="cell label">Agreed by</div>
+    <div class="cell value"><input type="text" name="agreed_by" value="{{ v('agreed_by') }}"></div>
+    <div class="cell value"></div>
+
+    <div class="cell label">Signature</div>
+    <div class="cell value span2">
+      <div class="sigpad-wrap">
+        <canvas class="sigpad" data-target="agreed_signature"></canvas>
+        <button type="button" class="sig-clear">Clear</button>
+      </div>
+    </div>
+  </div>
+  <input type="hidden" name="agreed_signature" value="{{ v('agreed_signature') }}">
+
+  <!-- Acceptance ---------------------------------------------------- -->
+  <div class="bar">Acceptance</div>
+  <p class="note">The above system has been witnessed and/or accepted on behalf of</p>
+
+  <div class="grid sign-grid">
+    <div class="cell label">Name</div>
+    <div class="cell value span2"><input type="text" name="acceptance_name" value="{{ v('acceptance_name') }}"></div>
+
+    <div class="cell label">Signature</div>
+    <div class="cell value span2">
+      <div class="sigpad-wrap">
+        <canvas class="sigpad" data-target="acceptance_signature"></canvas>
+        <button type="button" class="sig-clear">Clear</button>
+      </div>
+    </div>
+  </div>
+  <input type="hidden" name="acceptance_signature" value="{{ v('acceptance_signature') }}">
+
+  <div class="actions">
+    <button class="btn" type="submit">Save certificate</button>
+    {% if row %}
+      <a class="btn secondary" href="{{ url_for('certificate', id=row['id']) }}">View</a>
+      <a class="btn ghost" href="{{ url_for('certificate_pdf', id=row['id']) }}">Download PDF</a>
+    {% endif %}
+  </div>
+</form>
+
+<script src="{{ url_for('static', filename='signature.js') }}"></script>
+</body>
+</html>
