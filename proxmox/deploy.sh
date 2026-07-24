@@ -33,7 +33,9 @@ MEMORY="${MEMORY:-1024}"                   # MB
 DISK="${DISK:-4}"                          # GB
 IPCONFIG="${IPCONFIG:-ip=dhcp}"            # or ip=192.168.1.50/24,gw=192.168.1.1
 ROOT_PASSWORD="${ROOT_PASSWORD:-changeme123}"
-TEMPLATE="${TEMPLATE:-debian-12-standard_12.7-1_amd64.tar.zst}"
+# Leave TEMPLATE empty to auto-pick the latest debian-12-standard image,
+# or pin one, e.g. TEMPLATE=debian-12-standard_12.12-1_amd64.tar.zst
+TEMPLATE="${TEMPLATE:-}"
 # ============================================================================
 
 SRC_DIR=/opt/ascom-form/src
@@ -43,9 +45,20 @@ if [[ "$GIT_REPO" == *YOUR_USER* ]]; then
   exit 1
 fi
 
-echo ">> [1/4] Ensuring Debian 12 template is present…"
+echo ">> [1/4] Ensuring a Debian 12 template is present…"
+pveam update >/dev/null 2>&1 || true
+if [[ -z "$TEMPLATE" ]]; then
+  # Auto-pick the newest debian-12-standard image from the catalog.
+  TEMPLATE=$(pveam available --section system \
+             | awk '/debian-12-standard/ {print $2}' | sort -V | tail -n1)
+fi
+if [[ -z "$TEMPLATE" ]]; then
+  echo "!! Could not find a debian-12-standard template. Run:" >&2
+  echo "   pveam available --section system | grep debian-12-standard" >&2
+  exit 1
+fi
+echo "   using template: $TEMPLATE"
 if ! pveam list "$TEMPLATE_STORAGE" | grep -q "$TEMPLATE"; then
-  pveam update
   pveam download "$TEMPLATE_STORAGE" "$TEMPLATE"
 fi
 
